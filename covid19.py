@@ -131,6 +131,7 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
             print('caso 8 - tabla 1')
             # print(t)
             tt = t.iloc[2:,0:3]
+            tt = tt.dropna()
             tt = tt.reset_index(drop=True)
             # print(tt)
             csv_df[csv_column_fecha] = [fileDate] * len(tt)
