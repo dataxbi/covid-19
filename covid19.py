@@ -21,6 +21,29 @@ csv_column_ccaa = "CCAA"
 csv_column_casos = "Casos"
 csv_column_fallecidos = "Fallecidos"
 
+# Nombres de las CCAA
+ccaa_names = [
+    'Andalucía',
+    'Aragón',
+    'Asturias',
+    'Baleares',
+    'Canarias',
+    'Cantabria',
+    'Castilla La Mancha',
+    'Castilla y León',
+    'Cataluña',
+    'Ceuta',
+    'C. Valenciana',
+    'Extremadura',
+    'Galicia',
+    'Madrid',
+    'Melilla',
+    'Murcia',
+    'Navarra',
+    'País Vasco',
+    'La Rioja'
+]
+
 # configuración de azure
 azure_storage_connection_string = secrets.AZURE_STORAGE_CONNECTION_STRING
 azure_storage_blob_container_name = "covid-19"
@@ -126,14 +149,41 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
             csv_df[csv_column_fallecidos] = tt[tt.columns[0]].apply(lambda s: s.split()[0])
             # was_found = True
             break
-        if current_case == 0 and len(t.columns) >= 2 and "Confirmados COVID" in t.columns[1] :
-            current_case = 8
-            print('caso 8 - tabla 1')
+        if current_case == 0 and len(t.columns) >= 5 and "Confirmados COVID" in t.columns[1] and "Anticuerpos positivos" in t.columns[3]:
+            current_case = 9
+            print('caso 9 - tabla 1')
             # print(t)
-            tt = t.iloc[2:,0:3]
+            tt = t.iloc[2:,0:5]
+            tt = tt.fillna(value={tt.columns[3]:0})            
+            tt = tt.dropna()
+            tt = tt.reset_index(drop=True)
+            csv_df[csv_column_fecha] = [fileDate] * len(tt)
+            csv_df[csv_column_ccaa] = tt.iloc[:,0:1]
+            tt['c1'] = tt.iloc[:,3:4]
+            tt['c2'] = tt.iloc[:,4:5]
+            tt['c1'] = tt['c1'].astype(str).str.replace(r'\D','')
+            tt['c2'] = tt['c2'].astype(str).str.replace(r'\D','')
+            csv_df[csv_column_casos] = tt['c2'].astype('int32') - tt['c1'].astype('int32')
+            continue
+        if current_case == 9 and len(t.columns) >= 4 and t.columns[3] == 'Fallecidos':
+            print('caso 9 - tabla 2')
+            # print(t)
+            tt = t.iloc[2:,3:4]
             tt = tt.dropna()
             tt = tt.reset_index(drop=True)
             # print(tt)
+            # esta columna contiene datos de 2 columnas dentro, separados por espacio y los fallecidos son los de la izquierda
+            csv_df[csv_column_fallecidos] = tt[tt.columns[0]].apply(lambda s: s.split()[0])
+            was_found = True
+            break
+        if current_case == 0 and len(t.columns) >= 2 and "Confirmados COVID" in t.columns[1] :
+            current_case = 8
+            print('caso 8 - tabla 1')
+            print(t)
+            tt = t.iloc[2:,0:3]
+            tt = tt.dropna()
+            tt = tt.reset_index(drop=True)
+            print(tt)
             csv_df[csv_column_fecha] = [fileDate] * len(tt)
             csv_df[csv_column_ccaa] = tt.iloc[:,0:1]
             csv_df[csv_column_casos] = tt.iloc[:,1:2]
@@ -150,15 +200,14 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
             csv_df[csv_column_fallecidos] = tt[tt.columns[0]].apply(lambda s: s.split()[0])
             was_found = True
             break
-
     if not was_found:
         return None
 
     csv_df = csv_df[csv_df[csv_column_ccaa]!="Total"]
     csv_df = csv_df[csv_df[csv_column_ccaa]!="ESPAÑA"]
-    csv_df[csv_column_casos] = csv_df[csv_column_casos].astype(str).str.replace(r'\D','')
+    csv_df[csv_column_ccaa] = ccaa_names
+    # csv_df[csv_column_casos] = csv_df[csv_column_casos].astype(str).str.replace(r'\D','')
     csv_df[csv_column_fallecidos] = csv_df[csv_column_fallecidos].astype(str).str.replace(r'\D','')
-    csv_df[csv_column_ccaa] = csv_df[csv_column_ccaa].astype(str).str.replace('*','')
 
     return csv_df.to_csv(index=False)
 
