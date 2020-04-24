@@ -228,6 +228,30 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
             csv_df[csv_column_fallecidos] = tt[tt.columns[0]].apply(lambda s: s.split()[0])
             was_found = True
             break
+        if current_case == 0 and len(t.columns) >= 5 and "Incremento" in t.columns[4]:
+            current_case = 11
+            print('caso 11 - tabla 1')
+            print(t)
+            tt = t.iloc[2:,0:6]
+            tt = tt.dropna(how='all')
+            tt = tt.reset_index(drop=True)
+            tt = tt.fillna(value={tt.columns[4]:0,tt.columns[5]:0})            
+            print(tt)
+            csv_df[csv_column_fecha] = [fileDate] * len(tt)
+            csv_df[csv_column_ccaa] = tt.iloc[:,0:1]
+            csv_df[csv_column_casos] = tt.iloc[:,2:3]
+            continue
+        if current_case == 11 and len(t.columns) >= 4 and t.columns[4] == 'Fallecidos':
+            print('caso 11 - tabla 2')
+            print(t)
+            tt = t.iloc[2:,3:4]
+            tt = tt.dropna()
+            tt = tt.reset_index(drop=True)
+            print(tt)
+            # esta columna contiene datos de 2 columnas dentro, separados por espacio y los fallecidos son los de la izquierda
+            csv_df[csv_column_fallecidos] = tt[tt.columns[0]].apply(lambda s: s.split()[0])
+            was_found = True
+            break
 
     if not was_found:
         return None
