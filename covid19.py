@@ -66,6 +66,7 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
     current_case = 0 # se usa cuando hay que revisar varias tablas
     for t in df:
         print(t.columns)
+        print(t)
         if "CCAA" in t.columns and 'Total casos' in t.columns:
             print('caso 1')
             csv_df[csv_column_ccaa] = t["CCAA"]
@@ -252,6 +253,29 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
             csv_df[csv_column_fallecidos] = tt[tt.columns[0]].apply(lambda s: s.split()[0])
             was_found = True
             break
+        if current_case == 0 and len(t.columns) >= 4 and "Incremento" in t.columns[3]:
+            current_case = 12
+            print('caso 12 - tabla 1')
+            print(t)
+            tt = t.iloc[2:,0:2]
+            tt = tt.dropna(how='all')
+            tt = tt.reset_index(drop=True)
+            print(tt)
+            csv_df[csv_column_fecha] = [fileDate] * len(tt)
+            csv_df[csv_column_ccaa] = tt.iloc[:,0:1]
+            csv_df[csv_column_casos] = tt.iloc[:,1:2]
+            continue
+        if current_case == 12 and len(t.columns) >= 4 and t.columns[4] == 'Fallecidos':
+            print('caso 12 - tabla 2')
+            print(t)
+            tt = t.iloc[2:,3:4]
+            tt = tt.dropna()
+            tt = tt.reset_index(drop=True)
+            print(tt)
+            # esta columna contiene datos de 2 columnas dentro, separados por espacio y los fallecidos son los de la izquierda
+            csv_df[csv_column_fallecidos] = tt[tt.columns[0]].apply(lambda s: s.split()[0])
+            was_found = True
+            break
 
     if not was_found:
         return None
@@ -259,7 +283,7 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
     csv_df = csv_df[csv_df[csv_column_ccaa]!="Total"]
     csv_df = csv_df[csv_df[csv_column_ccaa]!="ESPAÑA"]
     csv_df[csv_column_ccaa] = ccaa_names
-    # csv_df[csv_column_casos] = csv_df[csv_column_casos].astype(str).str.replace(r'\D','')
+    csv_df[csv_column_casos] = csv_df[csv_column_casos].astype(str).str.replace(r'\D','')
     csv_df[csv_column_fallecidos] = csv_df[csv_column_fallecidos].astype(str).str.replace(r'\D','')
 
     return csv_df.to_csv(index=False)
