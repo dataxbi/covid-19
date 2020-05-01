@@ -280,6 +280,7 @@ def load_data_from_pdf(pdf_file_path_or_url, fileDate):
     if not was_found:
         return None
 
+    csv_df[csv_column_ccaa] = csv_df[csv_column_ccaa].astype(str).str.replace(r'\W','')
     csv_df = csv_df[csv_df[csv_column_ccaa]!="Total"]
     csv_df = csv_df[csv_df[csv_column_ccaa]!="ESPAÑA"]
     csv_df[csv_column_ccaa] = ccaa_names
