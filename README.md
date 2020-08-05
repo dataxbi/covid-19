@@ -1,6 +1,6 @@
 # covid-19
 
-Script python utilizado para preparar los datos para el informe Power BI de la demo https://www.dataxbi.com/covid-19/
+Script Python utilizado para preparar los datos para el informe Power BI de la demo https://www.dataxbi.com/covid-19/
 
 Los datos se extraen diariamente del sitio web del Ministerio de Sanidad https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) donde se publican en un PDF :(  por ejemplo: https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/documentos/Actualizacion_80_COVID-19.pdf
 
@@ -21,7 +21,7 @@ Este script hace lo siguiente:
 
 El formato del fichero PDF cambia mucho, por lo que las reglas para extraer los datos hay que actualizarlas frecuentemente, para identificar en que tabla y en que columna vienen los datos de interés. Para que os hagáis una idea, desde el 10 de marzo de 2020 y hasta el 10 de abril de 2020 hemos tenido que hacer 7 variantes. Para hacer las cosas un pelín más complicada, desde la semana pasada los datos hay que buscarlos en dos tablas distintas. 
 
-Módulos python utilizados:
+Módulos Python utilizados:
 * [Requests](https://requests.readthedocs.io/): Para descargar la página web
 * [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/): Para encontrar el URL del PDF dentro del HTML (web scrapping)
 * [tabula-py](https://github.com/chezou/tabula-py): Para extraer las tablas del PDF 
